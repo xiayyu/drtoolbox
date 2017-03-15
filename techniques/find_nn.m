@@ -21,6 +21,8 @@ function [D, ni] = find_nn(X, k)
 %
 % (C) Laurens van der Maaten, Delft University of Technology
 
+% Mod by xiayyu
+
 
     if ~exist('k', 'var') || isempty(k)
 		k = 12;
@@ -48,17 +50,21 @@ function [D, ni] = find_nn(X, k)
         ni = zeros(n, k);
         for i=1:batch_size:n
             batch_ind = i:min(i + batch_size - 1, n);
-            DD = bsxfun(@plus, sum_X', bsxfun(@plus, sum_X(batch_ind), ...
-                                                   -2 * (X(batch_ind,:) * X')));
-            [DD, ind] = sort(abs(DD), 2, 'ascend');
+            %DD = bsxfun(@plus, sum_X', bsxfun(@plus, sum_X(batch_ind), ...
+            %                                       -2 * (X(batch_ind,:) * X')));
+            DD = sum_X' + sum_X(batch_ind) - 2 * (X(batch_ind,:) * X');
+            % R2016b and lator directly use operators instead of bsxfun
+            % is allowed. 
+            DD(DD < 0) = 0;
+            [DD, ind] = sort(DD, 2, 'ascend');
             D(batch_ind,:) = sqrt(DD(:,2:k + 1));
             ni(batch_ind,:) = ind(:,2:k + 1);
         end
-        D(D == 0) = 1e-9;
-        Dout = sparse(n, n);
+        D(D == 0) = 1e-9; % zero in sparse Dout represent no connections
+        Dout = sparse(n, n); 
         idx = repmat(1:n, [1 k])';
         Dout(sub2ind([n, n], idx,   ni(:))) = D;
-        Dout(sub2ind([n, n], ni(:), idx))   = D;
+        Dout(sub2ind([n, n], ni(:), idx))   = D; % make sure D = D'
         D = Dout;
     end
     

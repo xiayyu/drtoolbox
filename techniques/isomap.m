@@ -22,6 +22,8 @@ function [mappedX, mapping] = isomap(X, no_dims, k)
 %
 % (C) Laurens van der Maaten, Delft University of Technology
 
+% Mod by xiayyu 
+
 
     if ~exist('no_dims', 'var')
         no_dims = 2;
@@ -32,7 +34,8 @@ function [mappedX, mapping] = isomap(X, no_dims, k)
 
     % Construct neighborhood graph
     disp('Constructing neighborhood graph...'); 
-    D = real(find_nn(X, k));
+    %D = real(find_nn(X, k));
+    D = find_nn(X, k);
     
     % Select largest connected component
     blocks = components(D)';
@@ -40,7 +43,7 @@ function [mappedX, mapping] = isomap(X, no_dims, k)
     for i=1:max(blocks)
         count(i) = length(find(blocks == i));
     end
-    [count, block_no] = max(count);
+    [~, block_no] = max(count);
     conn_comp = find(blocks == block_no);    
     D = D(conn_comp, conn_comp);
     mapping.D = D;
@@ -54,7 +57,8 @@ function [mappedX, mapping] = isomap(X, no_dims, k)
     % Performing MDS using eigenvector implementation
     disp('Constructing low-dimensional embedding...');
     D = D .^ 2;
-    M = -.5 .* (bsxfun(@minus, bsxfun(@minus, D, sum(D, 1)' ./ n), sum(D, 1) ./ n) + sum(D(:)) ./ (n .^ 2));
+    %M = -.5 .* (bsxfun(@minus, bsxfun(@minus, D, sum(D, 1)' ./ n), sum(D, 1) ./ n) + sum(D(:)) ./ (n .^ 2));
+    M = -.5 .* (D - sum(D)' ./ n - sum(D) ./ n + sum(D(:)) ./ (n .^ 2));
     M(isnan(M)) = 0;
     M(isinf(M)) = 0;
     [vec, val] = eig(M);
