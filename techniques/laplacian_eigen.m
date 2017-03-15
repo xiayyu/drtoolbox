@@ -27,7 +27,7 @@ function [mappedX, mapping] = laplacian_eigen(X, no_dims, k, sigma, eig_impl)
     if ~exist('k', 'var')
         k = 12;
     end
-	if ~exist('sigma', 'var')
+    if ~exist('sigma', 'var')
 		sigma = 1;
     end
     if ~exist('eig_impl', 'var')
@@ -40,7 +40,7 @@ function [mappedX, mapping] = laplacian_eigen(X, no_dims, k, sigma, eig_impl)
         G = L2_distance(X', X');
         
         % Compute neighbourhood graph
-        [tmp, ind] = sort(G); 
+        [~, ind] = sort(G); 
         for i=1:size(G, 1)
             G(i, ind((2 + k):end, i)) = 0; 
         end
@@ -59,7 +59,7 @@ function [mappedX, mapping] = laplacian_eigen(X, no_dims, k, sigma, eig_impl)
     for i=1:max(blocks)
         count(i) = length(find(blocks == i));
     end
-    [count, block_no] = max(count);
+    [~, block_no] = max(count);
     conn_comp = find(blocks == block_no);    
     G = G(conn_comp, conn_comp);
     
